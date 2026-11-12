@@ -1,0 +1,192 @@
+{
+ "version": 1,
+ "drawer": {
+  "width": 580,
+  "depth": 580
+ },
+ "defaults": {
+  "height": 40,
+  "wall": 2,
+  "r": 4,
+  "cover_width": 32,
+  "cover_enabled": true
+ },
+ "columns": [
+  {
+   "name": "Col 1",
+   "width": 115,
+   "boxes": [
+    {
+     "depth": 102.5,
+     "qty": 1,
+     "tag": "D"
+    },
+    {
+     "depth": 67.8,
+     "qty": 3,
+     "tag": "D"
+    },
+    {
+     "depth": 43.5,
+     "qty": 1,
+     "tag": "C"
+    },
+    {
+     "depth": 67.8,
+     "qty": 2,
+     "tag": "D"
+    },
+    {
+     "depth": 58.5,
+     "qty": 1,
+     "tag": "D"
+    }
+   ]
+  },
+  {
+   "name": "Col 2",
+   "width": 87.5,
+   "boxes": [
+    {
+     "depth": 102.5,
+     "qty": 1,
+     "tag": "P"
+    },
+    {
+     "depth": 67.8,
+     "qty": 1,
+     "tag": "D"
+    },
+    {
+     "depth": 43.5,
+     "qty": 5,
+     "tag": null
+    },
+    {
+     "depth": 43.5,
+     "qty": 1,
+     "tag": "C"
+    },
+    {
+     "depth": 58.5,
+     "qty": 1,
+     "tag": "D"
+    }
+   ]
+  },
+  {
+   "name": "Col 3",
+   "width": 87.5,
+   "boxes": [
+    {
+     "depth": 102.5,
+     "qty": 1,
+     "tag": "P"
+    },
+    {
+     "depth": 96,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 67.8,
+     "qty": 1,
+     "tag": "D"
+    },
+    {
+     "depth": 43.5,
+     "qty": 5,
+     "tag": null
+    },
+    {
+     "depth": 58.5,
+     "qty": 1,
+     "tag": "D"
+    }
+   ]
+  },
+  {
+   "name": "Col 4",
+   "width": 87.5,
+   "boxes": [
+    {
+     "depth": 102.5,
+     "qty": 1,
+     "tag": "P"
+    },
+    {
+     "depth": 96,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 67.8,
+     "qty": 4,
+     "tag": null
+    },
+    {
+     "depth": 84,
+     "qty": 1,
+     "tag": "P"
+    }
+   ]
+  },
+  {
+   "name": "Col 5",
+   "width": 87.5,
+   "boxes": [
+    {
+     "depth": 205,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 145,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 120,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 109.5,
+     "qty": 1,
+     "tag": null
+    }
+   ]
+  },
+  {
+   "name": "Col 6",
+   "width": 115,
+   "boxes": [
+    {
+     "depth": 127,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 119,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 93.5,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 117.5,
+     "qty": 1,
+     "tag": null
+    },
+    {
+     "depth": 109.5,
+     "qty": 1,
+     "tag": null
+    }
+   ]
+  }
+ ]
+}

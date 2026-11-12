@@ -1,0 +1,6 @@
+streamlit>=1.40,<2
+pydantic>=2.7,<3
+pandas>=2.2
+pytest>=8.0
+# Optional (only for tools/import_docx.py):
+python-docx>=1.1
