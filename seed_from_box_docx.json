@@ -9,7 +9,8 @@
   "wall": 2,
   "r": 4,
   "cover_width": 32,
-  "cover_enabled": true
+  "cover_width_short": 28,
+  "short_depth_below": 45
  },
  "columns": [
   {
@@ -18,28 +19,23 @@
    "boxes": [
     {
      "depth": 102.5,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     },
     {
      "depth": 67.8,
-     "qty": 3,
-     "tag": "D"
+     "qty": 3
     },
     {
      "depth": 43.5,
-     "qty": 1,
-     "tag": "C"
+     "qty": 1
     },
     {
      "depth": 67.8,
-     "qty": 2,
-     "tag": "D"
+     "qty": 2
     },
     {
      "depth": 58.5,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     }
    ]
   },
@@ -49,28 +45,19 @@
    "boxes": [
     {
      "depth": 102.5,
-     "qty": 1,
-     "tag": "P"
+     "qty": 1
     },
     {
      "depth": 67.8,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     },
     {
      "depth": 43.5,
-     "qty": 5,
-     "tag": null
-    },
-    {
-     "depth": 43.5,
-     "qty": 1,
-     "tag": "C"
+     "qty": 6
     },
     {
      "depth": 58.5,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     }
    ]
   },
@@ -80,28 +67,23 @@
    "boxes": [
     {
      "depth": 102.5,
-     "qty": 1,
-     "tag": "P"
+     "qty": 1
     },
     {
      "depth": 96,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 67.8,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     },
     {
      "depth": 43.5,
-     "qty": 5,
-     "tag": null
+     "qty": 5
     },
     {
      "depth": 58.5,
-     "qty": 1,
-     "tag": "D"
+     "qty": 1
     }
    ]
   },
@@ -111,23 +93,19 @@
    "boxes": [
     {
      "depth": 102.5,
-     "qty": 1,
-     "tag": "P"
+     "qty": 1
     },
     {
      "depth": 96,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 67.8,
-     "qty": 4,
-     "tag": null
+     "qty": 4
     },
     {
      "depth": 84,
-     "qty": 1,
-     "tag": "P"
+     "qty": 1
     }
    ]
   },
@@ -137,23 +115,19 @@
    "boxes": [
     {
      "depth": 205,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 145,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 120,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 109.5,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     }
    ]
   },
@@ -163,28 +137,23 @@
    "boxes": [
     {
      "depth": 127,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 119,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 93.5,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 117.5,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     },
     {
      "depth": 109.5,
-     "qty": 1,
-     "tag": null
+     "qty": 1
     }
    ]
   }

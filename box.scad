@@ -28,12 +28,10 @@ union() {
             rounded_box(length - 2*wall, width - 2*wall, height, r - wall);
     }
 
-    // [cover:begin]
     // partial top cover, trimmed to the rounded outline
     intersection() {
         rounded_box(length, width, height, r);
         translate([0, 0, height - cover_thick])
             cube([length, cover_width, cover_thick]);
     }
-    // [cover:end]
 }
