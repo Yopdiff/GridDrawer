@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GridDrawer</title><link rel="stylesheet" href="/static/style.css?v=16"></head>
+<body>
+<div id="busyOverlay" class="busy-overlay" hidden><div class="busy-card"><div class="spinner"></div><strong id="busyMessage">Working...</strong><span>Please wait until this operation finishes.</span></div></div>
+<aside><h1>GridDrawer</h1><p class="muted">Drawer organizer generator</p>
+<button id="load">Load example</button><button id="clear">Clear</button>
+<label>Drawer width <input id="drawerWidth" type="number" step=".1"></label>
+<label>Drawer depth <input id="drawerDepth" type="number" step=".1"></label>
+<label>Height <input id="height" type="number" step=".1"></label>
+<label>Wall <input id="wall" type="number" step=".1"></label>
+<label>Radius <input id="radius" type="number" step=".1"></label>
+<label>Workers <input id="workers" type="number" min="1" max="16" value="4"></label>
+<h3>Print bed arrangement</h3>
+<label>Bed width <input id="bedWidth" type="number" min="1" step=".1" value="250"></label>
+<label>Bed depth <input id="bedDepth" type="number" min="1" step=".1" value="210"></label>
+<label>Bed margin (each side) <input id="bedMargin" type="number" min="0" step=".1" value="5"></label>
+<label>Box gap <input id="bedGap" type="number" min="0" step=".1" value="2"></label>
+<label class="check"><input id="allowRotation" type="checkbox" checked> Allow rotation</label>
+<label class="check"><input id="includeScad" type="checkbox" checked> Include SCAD in ZIP</label>
+<label>Print profile <input id="printProfile" value="0.20mm SPEED @MK4S HF0.4"></label>
+<label>Printer profile <input id="printerProfile" value="Original Prusa MK4S HF0.4 nozzle"></label>
+<label>Material profile <input id="materialProfile" value="Generic PLA @MK4S HF0.4"></label>
+<label class="check"><input id="supports" type="checkbox" checked> Generate supports everywhere</label>
+<label class="check"><input id="binaryGcode" type="checkbox" checked> Binary G-code (.bgcode)</label>
+<div id="status"></div><button id="arrange" class="primary">Arrange print beds</button><button id="build" class="primary">Generate STL files</button>
+<button id="slice" class="primary" disabled>Slice arranged beds</button><a id="sliceDebug" hidden href="/api/slice/debug">Download slice debug log</a>
+<a id="zip" hidden>Download all (ZIP)</a></aside>
+<main><header><h2>Your drawer</h2><span id="summary"></span><button id="addColumn" class="primary">+ Add column</button></header>
+<div id="cursorPosition" class="cursor-position">Cursor: (0, 0) mm</div><div id="previewFrame"><div id="yRuler" class="ruler y-ruler"></div><div class="preview-main"><div id="canvas"></div><div id="xRuler" class="ruler x-ruler"></div></div></div><section id="issues"></section><section id="results"></section></main>
+<section id="arrangementView" hidden><div class="arrangement-header"><h2>Print bed arrangement</h2><span id="arrangementSummary"></span></div><div id="beds"></div></section>
+<dialog id="columnDialog"><form id="columnForm"><h3 id="columnDialogTitle">Add columns</h3><label>Column width (mm)<input id="columnWidth" type="number" min="1" step=".1" value="115" required></label><label id="columnCountLabel">How many columns<input id="columnCount" type="number" min="1" max="50" step="1" value="1" required></label><p class="muted" id="columnDialogHint">Columns are added from left to right.</p><p class="dialog-error" id="columnError"></p><div class="dialog-actions"><button type="button" id="cancelColumn">Cancel</button><button type="button" value="delete" id="deleteColumn" class="danger" hidden>Delete column</button><button type="submit" value="add" id="saveColumn" class="primary">Add columns</button></div></form></dialog>
+<dialog id="boxDialog"><form id="boxForm"><h3>Add boxes</h3><label>Box depth (mm)<input id="boxDepth" type="number" min="1" step=".1" value="50" required></label><label>How many boxes<input id="boxCount" type="number" min="1" max="100" step="1" value="1" required></label><p class="muted">Boxes stack from the bottom of the column upward.</p><p class="dialog-error" id="boxError"></p><div class="dialog-actions"><button type="button" id="cancelBox">Cancel</button><button type="submit" value="add" class="primary">Add boxes</button></div></form></dialog>
+<script src="/static/app.js?v=16"></script></body></html>

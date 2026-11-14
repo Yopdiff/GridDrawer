@@ -27,7 +27,7 @@ arrange them by eye, export G-code, print.
 3. One click injects the dimensions into the OpenSCAD template, runs the OpenSCAD CLI, and returns the STLs
    (individually or as a ZIP).
 
-Still manual: slicing, G-code, printing.
+The app now also slices arranged beds through the installed PrusaSlicer CLI and provides G-code/BG-code downloads.
 
 **Scope: a single-user tool on the author's own Windows PC.** No accounts, hosting, Docker, HTTPS, CORS or
 database. The server binds to `127.0.0.1`, runs **one build at a time**, and keeps only the latest build.
@@ -346,6 +346,9 @@ Stateless apart from the latest build (one global object). The client sends the 
 | `GET /api/build` | Latest build: `{state: idle\|running\|done\|failed, done, total, items:[{filename,status,seconds,log}]}` |
 | `GET /api/build/files/{filename}` | One STL (attachment) |
 | `GET /api/build/zip?include_scad=` | The ZIP |
+| `POST /api/slice` | `{arrangement, options:{print_profile, printer_profile, binary_gcode}}`; slices every arranged bed with PrusaSlicer |
+| `GET /api/slice` | Latest slice progress and per-bed output status |
+| `GET /api/slice/files/{filename}` | One `.gcode` or `.bgcode` file (attachment) |
 
 Match requested filenames against the build's known list rather than joining them into a path. Bind to
 `127.0.0.1`; no auth, no CORS. API errors are JSON `{detail}`. Use `pathlib` for paths and `logging` to
@@ -493,7 +496,13 @@ this re-imports after the Word file changes):
 3. Group by table column; warn if the `B` values in a column differ; merge consecutive equal `A` into one row
    with `qty`; set `drawer.width = sum(column widths)` and `drawer.depth = max(column used depth)`.
 
-**Not in v1:** automatic bin packing, 3MF plate nesting, G-code, accounts, database, Docker.
+**Not in v1:** automatic bin packing, 3MF plate nesting, accounts, database, Docker.
+
+Slicing uses the detected PrusaSlicer console executable, merges each arranged bed into translated and rotated STL
+geometry, and applies the `0.20mm SPEED @MK4S HF0.4` print profile with 15% grid infill and snug supports everywhere.
+The printer profile defaults to `Original Prusa MK4S HF0.4 nozzle` and the material profile to
+`Generic PLA @MK4S HF0.4`; the sidebar can toggle supports and override profile names or choose binary `.bgcode`
+or text `.gcode`.
 
 **Possible later, in order:** (1) export a pre-arranged 3MF plate per column; (2) a `cover_side` option via an
 extra template variable; (3) 3D STL preview and label recesses; (4) a stdlib-only server (no pip install) behind
