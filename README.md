@@ -1,5 +1,9 @@
 # Toolbox Drawer Box Generator
 
+Locations
+OpenSCAD: core/builder.py:40
+Slicer: core/slicer.py:12
+
 A local web app that turns **measured drawer dimensions** into **ready-to-slice STL files** for open-top,
 rounded-corner boxes, using the author's existing OpenSCAD template (`templates/box.scad`).
 
