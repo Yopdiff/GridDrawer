@@ -109,7 +109,7 @@ Reordering boxes does not change the files, so nothing goes out of date.
 The slicer profiles default to a Prusa MK4S with a 0.4 mm high-flow nozzle and generic PLA. Profile names must
 match the names shown in your PrusaSlicer exactly. Slicing always uses 15% grid infill.
 
-Boxes shallower than 45 mm get a 28 mm cover; all others get 32 mm.
+Boxes shallower than 45 mm get a 26 mm cover; all others get 32 mm.
 
 ### Saving your work
 

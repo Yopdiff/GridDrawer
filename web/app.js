@@ -26,9 +26,18 @@ function emptyProject() {
   return {
     version: 1,
     drawer: { width: 580, depth: 580 },
-    defaults: { height: 40, wall: 2, r: 4, cover_width: 32, cover_width_short: 28, short_depth_below: 45 },
+    defaults: { height: 40, wall: 2, r: 4, cover_width: 32, cover_width_short: 26, short_depth_below: 45 },
     columns: [],
   };
+}
+
+// Fill in missing fields of a loaded project. The short cover used to default to 28 mm;
+// projects saved with that old default move to the current 26 mm (there is no field for it on the page).
+function loadedProject(data) {
+  const next = { ...emptyProject(), ...data };
+  next.defaults = { ...emptyProject().defaults, ...next.defaults };
+  if (next.defaults.cover_width_short === 28) next.defaults.cover_width_short = 26;
+  return next;
 }
 
 const fmt = value => String(Math.round(value * 1000) / 1000);
@@ -710,7 +719,7 @@ $('openFile').onchange = async event => {
   try {
     const next = JSON.parse(await file.text());
     await api('/api/validate', next); // rejects files that are not a project
-    setProject({ ...emptyProject(), ...next });
+    setProject(loadedProject(next));
   } catch (error) {
     alert(`Could not open that project file.\n${error.message}`);
   }
@@ -737,7 +746,7 @@ $('status').addEventListener('click', async event => {
 (async () => {
   try {
     const saved = JSON.parse(stored(STORE_PROJECT));
-    if (saved && saved.drawer && Array.isArray(saved.columns)) project = { ...emptyProject(), ...saved };
+    if (saved && saved.drawer && Array.isArray(saved.columns)) project = loadedProject(saved);
   } catch { /* corrupt autosave: start empty */ }
   updateSignatures();
   render();

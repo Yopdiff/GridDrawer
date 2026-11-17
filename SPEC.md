@@ -159,7 +159,7 @@ Pydantic v2 models; the JSON below is also the project save-file format.
   "drawer":   { "width": 580, "depth": 580 },       // mm; frame and leftover display only
   "defaults": { "height": 40, "wall": 2, "r": 4,
                 "cover_width": 32,                    // normal cover
-                "cover_width_short": 28,              // about 1 inch, for shallow boxes
+                "cover_width_short": 26,              // for shallow boxes
                 "short_depth_below": 45 },            // depth < 45 mm -> short cover
   "columns": [
     { "name": "Col 1", "width": 115,                 // -> scad length
@@ -190,13 +190,13 @@ Derived values (`core/layout.py`, `place(project) -> list[Placement]`, `stats(pr
 Every box has the cover. Its width depends on the box depth:
 
 ```
-cover_width = 28  if depth < 45
+cover_width = 26  if depth < 45
             = 32  otherwise          # depth of exactly 45 uses 32
 ```
 
 The three numbers live in the project's `defaults`; the page has no fields for them, so change them by
 editing a saved project file. In the author's drawer only the `43.5`-deep boxes use the short
-cover (15.5 mm opening instead of 11.5 mm).
+cover (17.5 mm opening instead of 11.5 mm).
 
 ---
 
@@ -328,9 +328,12 @@ The seed project with default settings produces no errors.
 * `slice_beds(arrangement, build_dir, output_dir, exe, ...)` runs, per bed:
   `prusa-slicer-console --export-gcode --dont-arrange --output bed-N.bgcode --print-profile P
   --printer-profile R --fill-density 15% --fill-pattern grid --nozzle-diameter 0.4 [support flags]
-  --material-profile M [--binary-gcode] bed-N.stl`.
-  Supports on: `--support-material --support-material-buildplate-only=0 --support-material-style snug`;
-  off: `--support-material=0`.
+  --material-profile M --binary-gcode[=0] bed-N.stl`.
+  Supports on (the GUI's "Supports: Everywhere"): `--support-material --support-material-auto
+  --support-material-buildplate-only=0 --support-material-style snug`. `--support-material-auto` is required:
+  the MK4S print profiles set `support_material_auto = 0`, which means "for support enforcers only", so
+  without it no supports are generated. Off: `--support-material=0 --support-material-auto=0`.
+  `--binary-gcode=0` is passed explicitly for text G-code because the MK4S printer profile defaults to binary.
 * Defaults: print `0.20mm SPEED @MK4S HF0.4`, printer `Original Prusa MK4S HF0.4 nozzle`, material
   `Generic PLA @MK4S HF0.4`, supports on, binary G-code on. Timeout 900 s per bed.
 * Two beds are sliced at a time (`workers=2`); `on_progress` is called as each bed finishes and the returned
@@ -477,14 +480,16 @@ python app.py                     # serves http://127.0.0.1:8000
 All tests use the seed project or small hand-made STLs; none needs OpenSCAD or PrusaSlicer installed.
 
 1. **Counts:** 42 boxes, 19 unique sizes, 19 planned jobs.
-2. **Cover rule and names:** 28 for depth 43.5, 32 for 45; `43.5X87.5.stl` is in the plan.
+2. **Cover rule and names:** 26 for depth 43.5, 32 for 45; `43.5X87.5.stl` is in the plan.
 3. **Render and validation:** `43.5X87.5` renders `length = 87.5;` and `width  = 43.5;`; the seed has no errors.
 4. **Reorder:** `[67.8 x3, 43.5]` moving index 3 to 0 gives `[43.5, 67.8 x3]`.
 5. **Arrangement:** all 42 seed boxes are accounted for and every placement stays inside the bed margins.
 6. **Merge, translated:** a triangle moved by (12, 34) lands there.
 7. **Merge, rotated:** a rotated placement turns the geometry 90 degrees into its slot.
-8. **Slice command:** default profiles, 15% grid infill, snug supports and `--binary-gcode` are on the command line.
-9. **Slice without supports:** `--support-material=0` and no support style.
+8. **Slice command:** default profiles, 15% grid infill, snug auto supports (`--support-material-auto`) and
+   `--binary-gcode` are on the command line.
+9. **Slice without supports:** `--support-material=0`, no auto supports, no support style, and
+   `--binary-gcode=0` for text G-code.
 10. **Build cache:** a second build of the same project compiles nothing; all 19 items are `cached`.
 11. **Slice progress:** `on_progress` fires once per bed and results come back in bed order.
 

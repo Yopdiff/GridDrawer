@@ -117,14 +117,16 @@ def slice_beds(
             "--nozzle-diameter", "0.4",
         ]
         if supports:
-            command += ["--support-material", "--support-material-buildplate-only=0",
-                        "--support-material-style", "snug"]
+            # "Supports: Everywhere" in the GUI. --support-material alone keeps the print profile's
+            # support_material_auto = 0, which only supports painted enforcers.
+            command += ["--support-material", "--support-material-auto",
+                        "--support-material-buildplate-only=0", "--support-material-style", "snug"]
         else:
-            command.append("--support-material=0")
+            command += ["--support-material=0", "--support-material-auto=0"]
         if material_profile:
             command += ["--material-profile", material_profile]
-        if binary_gcode:
-            command.append("--binary-gcode")
+        # Always explicit: MK4S printer profiles default to binary G-code.
+        command.append("--binary-gcode" if binary_gcode else "--binary-gcode=0")
         command.append(str(merged))
         started = time.monotonic()
         try:

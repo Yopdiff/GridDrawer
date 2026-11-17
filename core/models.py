@@ -24,7 +24,7 @@ class Defaults(BaseModel):
     wall: float = 2
     r: float = 4
     cover_width: float = 32
-    cover_width_short: float = 28
+    cover_width_short: float = 26
     short_depth_below: float = 45
 
 

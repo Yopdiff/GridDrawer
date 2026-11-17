@@ -27,7 +27,7 @@ def test_seed_counts_and_plan():
 
 def test_cover_and_names():
     p = project()
-    assert cover_width_for(p, 43.5) == 28
+    assert cover_width_for(p, 43.5) == 26
     assert cover_width_for(p, 45) == 32
     assert "43.5X87.5.stl" in {stl_filename(job.spec) for job in plan(p)}
 
@@ -123,7 +123,8 @@ def test_slice_command_uses_requested_profiles_and_overrides(tmp_path):
     assert "--fill-density" in command and "15%" in command
     assert "--fill-pattern" in command and "grid" in command
     assert "--support-material" in command and "--support-material-style" in command
-    assert "--binary-gcode" in command
+    assert "--support-material-auto" in command  # "everywhere", not enforcers only
+    assert "--binary-gcode" in command and "--binary-gcode=0" not in command
     assert ["--material-profile", "Generic PLA @MK4S HF0.4"] == command[command.index("--material-profile"):command.index("--material-profile") + 2]
 
 
@@ -145,7 +146,9 @@ def test_slice_command_can_disable_supports(tmp_path):
         runner=fake_runner,
     )
     assert "--support-material=0" in commands[0]
+    assert "--support-material-auto" not in commands[0]
     assert "--support-material-style" not in commands[0]
+    assert "--binary-gcode=0" in commands[0]  # the printer profile would otherwise force binary
 
 
 def test_build_cache_hits_on_second_run(tmp_path, monkeypatch):
