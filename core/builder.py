@@ -8,12 +8,13 @@ import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from .layout import box_spec, place
 from .models import BoxSpec, Project
 from .naming import stl_filename
-from .scad_template import render_scad
+from .scad_template import render_body, with_header
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ def find_openscad(user_path: str | None = None) -> str | None:
     return next((str(Path(p)) for p in candidates if p and Path(p).is_file()), None)
 
 
+@lru_cache(maxsize=8)
 def get_version(exe: str | None) -> str | None:
     if not exe:
         return None
@@ -78,18 +80,21 @@ def build(project: Project, template: str, exe: str, output_root: Path, fn: int 
           on_progress=None) -> dict:
     run_dir = output_root / time.strftime("%Y%m%d-%H%M%S")
     run_dir.mkdir(parents=True, exist_ok=True)
+    cache_dir = output_root / "cache"
+    cache_dir.mkdir(exist_ok=True)
     jobs = plan(project)
     results = []
+    # The key must not include the timestamp header, or the cache would never hit.
+    key_suffix = f"\n{get_version(exe)}\nmanifold={manifold}".encode()
 
     def one(job: Job):
-        scad_text = render_scad(template, job.spec, fn)
+        body = render_body(template, job.spec, fn)
         scad_path = run_dir / job.filename.replace(".stl", ".scad")
         stl_path = run_dir / job.filename
-        scad_path.write_text(scad_text, encoding="utf-8", newline="\n")
-        cache_key = hashlib.sha256(scad_text.encode()).hexdigest()
-        cache_path = output_root / "cache" / f"{cache_key}.stl"
-        cache_path.parent.mkdir(exist_ok=True)
-        if not force and cache_path.exists():
+        scad_path.write_text(with_header(body, job.spec), encoding="utf-8", newline="\n")
+        cache_key = hashlib.sha256(body.encode() + key_suffix).hexdigest()
+        cache_path = cache_dir / f"{cache_key}.stl"
+        if not force and cache_path.is_file() and cache_path.stat().st_size > 0:
             shutil.copyfile(cache_path, stl_path)
             return {"filename": job.filename, "status": "cached", "seconds": 0, "log": ""}
         result = compile_scad(exe, scad_path, stl_path, manifold)

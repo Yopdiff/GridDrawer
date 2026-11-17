@@ -146,3 +146,40 @@ def test_slice_command_can_disable_supports(tmp_path):
     )
     assert "--support-material=0" in commands[0]
     assert "--support-material-style" not in commands[0]
+
+
+def test_build_cache_hits_on_second_run(tmp_path, monkeypatch):
+    import core.builder as builder
+    calls = []
+
+    def fake_compile(exe, scad, stl, manifold=False):
+        calls.append(stl.name)
+        stl.write_bytes(b"stl")
+        return {"ok": True, "returncode": 0, "stdout": "", "stderr": "", "seconds": 0.01}
+
+    monkeypatch.setattr(builder, "compile_scad", fake_compile)
+    monkeypatch.setattr(builder, "get_version", lambda exe: "test 1.0")
+    monkeypatch.setattr(builder.time, "strftime", lambda fmt: f"run-{len(calls)}")
+    template = (ROOT / "box.scad").read_text()
+    first = builder.build(project(), template, "openscad", tmp_path)
+    assert first["state"] == "done" and len(calls) == 19
+    second = builder.build(project(), template, "openscad", tmp_path)
+    assert len(calls) == 19  # nothing recompiled
+    assert all(item["status"] == "cached" for item in second["items"])
+
+
+def test_slice_reports_progress_in_bed_order(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "box.stl").write_bytes(b"test".ljust(84, b"\0"))
+
+    def fake_runner(command, **kwargs):
+        Path(command[command.index("--output") + 1]).write_bytes(b"bgcode")
+        return type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})()
+
+    seen = []
+    beds = [{"number": n, "placements": [{"filename": "box.stl", "x": 0, "y": 0}]} for n in (1, 2, 3)]
+    result = slice_beds({"beds": beds}, source, tmp_path / "out", "prusa", runner=fake_runner,
+                        on_progress=seen.append)
+    assert len(seen) == 3
+    assert [item["bed"] for item in result["items"]] == [1, 2, 3]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import threading
 import time
@@ -33,6 +34,18 @@ state = {
 lock = threading.Lock()
 
 
+def has_errors(project: Project) -> list | None:
+    issues = validate(project)
+    if any(item.level == "error" for item in issues):
+        return [item.model_dump() for item in issues]
+    return None
+
+
+def supports_manifold(version: str | None) -> bool:
+    year = re.search(r"\b(20\d\d)\b", version or "")
+    return bool(year and int(year.group(1)) >= 2024)
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
     return (ROOT / "web" / "index.html").read_text(encoding="utf-8")
@@ -50,7 +63,7 @@ def status():
     prusa = state["prusa_exe"]
     return {
         "openscad": {"found": bool(exe), "path": exe, "version": version,
-                     "manifold": bool(version and "2024" in version)},
+                     "manifold": supports_manifold(version)},
         "prusaslicer": {"found": bool(prusa), "path": prusa, "version": get_prusaslicer_version(prusa)},
     }
 
@@ -74,9 +87,8 @@ def validate_api(project: Project):
 
 @app.post("/api/plan")
 def plan_api(project: Project):
-    issues = validate(project)
-    if any(item.level == "error" for item in issues):
-        raise HTTPException(422, detail=[item.model_dump() for item in issues])
+    if errors := has_errors(project):
+        raise HTTPException(422, detail=errors)
     return {"jobs": [{"filename": job.filename, "spec": job.spec.model_dump(), "qty": job.qty, "columns": job.columns}
                      for job in plan(project)]}
 
@@ -84,9 +96,8 @@ def plan_api(project: Project):
 @app.post("/api/arrange")
 def arrange_api(payload: dict):
     project = Project.model_validate(payload.get("project", {}))
-    issues = validate(project)
-    if any(item.level == "error" for item in issues):
-        raise HTTPException(422, detail=[item.model_dump() for item in issues])
+    if errors := has_errors(project):
+        raise HTTPException(422, detail=errors)
     options = payload.get("options", {})
     try:
         return arrange(
@@ -104,25 +115,32 @@ def arrange_api(payload: dict):
 @app.post("/api/build")
 def build_api(payload: dict):
     project = Project.model_validate(payload.get("project", {}))
-    issues = validate(project)
-    if any(item.level == "error" for item in issues):
-        raise HTTPException(422, detail=[item.model_dump() for item in issues])
+    if errors := has_errors(project):
+        raise HTTPException(422, detail=errors)
     if not state["exe"]:
         raise HTTPException(422, detail="OpenSCAD was not found. Set its executable path first.")
     if not lock.acquire(blocking=False):
         raise HTTPException(422, detail="A build is already running.")
     options = payload.get("options", {})
-    state["build"] = {"state": "running", "done": 0, "total": len(plan(project)), "items": []}
+    exe = state["exe"]
+    total = len(plan(project))
+    progress = state["build"] = {"state": "running", "done": 0, "total": total, "items": []}
+
+    def on_progress(item):
+        progress["items"].append(item)
+        progress["done"] += 1
 
     def worker():
         try:
-            result = build(project, TEMPLATE, state["exe"], OUTPUT, fn=int(options.get("fn", 64)),
+            result = build(project, TEMPLATE, exe, OUTPUT, fn=int(options.get("fn", 64)),
                            workers=int(options.get("workers", 4)), include_scad=bool(options.get("include_scad", True)),
-                           force=bool(options.get("force", False)), manifold=bool(status()["openscad"]["manifold"]),
-                           on_progress=lambda item: state["build"].update(done=state["build"]["done"] + 1,
-                                                                         items=state["build"]["items"] + [item]))
-            state["build"] = {key: value for key, value in result.items() if key != "run_dir"}
+                           force=bool(options.get("force", False)), manifold=supports_manifold(get_version(exe)),
+                           on_progress=on_progress)
             state["run_dir"] = result["run_dir"]
+            state["build"] = {key: value for key, value in result.items() if key != "run_dir"}
+        except Exception as exc:  # never leave the page polling a build that died
+            state["build"] = {"state": "failed", "done": progress["done"], "total": total,
+                              "items": progress["items"], "error": str(exc)}
         finally:
             lock.release()
     threading.Thread(target=worker, daemon=True).start()
@@ -145,7 +163,11 @@ def slice_api(payload: dict):
         raise HTTPException(422, detail="Arrange print beds before slicing.")
     options = payload.get("options", {})
     slice_dir = OUTPUT / "slices" / time.strftime("%Y%m%d-%H%M%S")
-    state["slice"] = {"state": "running", "done": 0, "total": len(arrangement["beds"]), "items": []}
+    progress = state["slice"] = {"state": "running", "done": 0, "total": len(arrangement["beds"]), "items": []}
+
+    def on_progress(item):
+        progress["items"].append(item)
+        progress["done"] += 1
 
     def worker():
         try:
@@ -156,6 +178,7 @@ def slice_api(payload: dict):
                 material_profile=str(options.get("material_profile", "Generic PLA @MK4S HF0.4")),
                 supports=bool(options.get("supports", True)),
                 binary_gcode=bool(options.get("binary_gcode", True)),
+                on_progress=on_progress,
             )
             state["slice"] = {key: value for key, value in result.items() if key != "output_dir"}
             state["slice_dir"] = result["output_dir"]
