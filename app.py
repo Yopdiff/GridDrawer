@@ -105,7 +105,7 @@ def arrange_api(payload: dict):
             bed_width=float(options.get("bed_width", 250)),
             bed_depth=float(options.get("bed_depth", 210)),
             margin=float(options.get("margin", 5)),
-            gap=float(options.get("gap", 2)),
+            gap=float(options.get("gap", 10)),
             allow_rotation=bool(options.get("allow_rotation", True)),
         )
     except ValueError as exc:
@@ -178,6 +178,7 @@ def slice_api(payload: dict):
                 material_profile=str(options.get("material_profile", "Generic PLA @MK4S HF0.4")),
                 supports=bool(options.get("supports", True)),
                 binary_gcode=bool(options.get("binary_gcode", True)),
+                brim_width=max(0.0, float(options.get("brim_width", 5))),
                 on_progress=on_progress,
             )
             state["slice"] = {key: value for key, value in result.items() if key != "output_dir"}

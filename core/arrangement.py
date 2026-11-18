@@ -17,7 +17,7 @@ class Placement:
 
 
 def arrange(project: Project, bed_width: float = 250, bed_depth: float = 210,
-            margin: float = 5, gap: float = 2, allow_rotation: bool = True) -> dict:
+            margin: float = 5, gap: float = 10, allow_rotation: bool = True) -> dict:
     usable_width = bed_width - 2 * margin
     usable_depth = bed_depth - 2 * margin
     if usable_width <= 0 or usable_depth <= 0:

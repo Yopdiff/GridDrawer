@@ -97,6 +97,7 @@ def slice_beds(
     material_profile: str = "Generic PLA @MK4S HF0.4",
     supports: bool = True,
     binary_gcode: bool = True,
+    brim_width: float = 5,
     timeout: int = 900,
     runner=subprocess.run,
     workers: int = 2,
@@ -123,6 +124,11 @@ def slice_beds(
                         "--support-material-buildplate-only=0", "--support-material-style", "snug"]
         else:
             command += ["--support-material=0", "--support-material-auto=0"]
+        if brim_width > 0:
+            # Outer-only brim around every box (each box is its own island) to stop corners lifting.
+            command += ["--brim-type", "outer_only", "--brim-width", f"{brim_width:g}"]
+        else:
+            command += ["--brim-type", "no_brim", "--brim-width", "0"]
         if material_profile:
             command += ["--material-profile", material_profile]
         # Always explicit: MK4S printer profiles default to binary G-code.

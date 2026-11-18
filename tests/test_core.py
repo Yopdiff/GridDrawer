@@ -125,6 +125,7 @@ def test_slice_command_uses_requested_profiles_and_overrides(tmp_path):
     assert "--support-material" in command and "--support-material-style" in command
     assert "--support-material-auto" in command  # "everywhere", not enforcers only
     assert "--binary-gcode" in command and "--binary-gcode=0" not in command
+    assert ["--brim-type", "outer_only", "--brim-width", "5"] == command[command.index("--brim-type"):command.index("--brim-type") + 4]
     assert ["--material-profile", "Generic PLA @MK4S HF0.4"] == command[command.index("--material-profile"):command.index("--material-profile") + 2]
 
 
@@ -143,8 +144,9 @@ def test_slice_command_can_disable_supports(tmp_path):
     slice_beds(
         {"beds": [{"number": 1, "placements": [{"filename": "box.stl", "x": 0, "y": 0}]}]},
         source, tmp_path / "output", "prusa-slicer-console.exe", supports=False, binary_gcode=False,
-        runner=fake_runner,
+        brim_width=0, runner=fake_runner,
     )
+    assert ["--brim-type", "no_brim"] == commands[0][commands[0].index("--brim-type"):commands[0].index("--brim-type") + 2]
     assert "--support-material=0" in commands[0]
     assert "--support-material-auto" not in commands[0]
     assert "--support-material-style" not in commands[0]

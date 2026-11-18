@@ -63,7 +63,7 @@
       <label>Width <input id="bedWidth" type="number" min="1" step=".1" value="250"></label>
       <label>Depth <input id="bedDepth" type="number" min="1" step=".1" value="210"></label>
       <label>Edge margin <input id="bedMargin" type="number" min="0" step=".1" value="5"></label>
-      <label>Box gap <input id="bedGap" type="number" min="0" step=".1" value="2"></label>
+      <label>Box gap <input id="bedGap" type="number" min="0" step=".1" value="10"></label>
     </div>
     <label class="check"><input id="allowRotation" type="checkbox" checked> Allow rotation</label>
   </details>
@@ -73,6 +73,7 @@
     <label>Print <input id="printProfile" value="0.20mm SPEED @MK4S HF0.4"></label>
     <label>Printer <input id="printerProfile" value="Original Prusa MK4S HF0.4 nozzle"></label>
     <label>Material <input id="materialProfile" value="Generic PLA @MK4S HF0.4"></label>
+    <label>Brim width (outer only, mm; 0 = off) <input id="brimWidth" type="number" min="0" step=".5" value="5"></label>
     <label class="check"><input id="supports" type="checkbox" checked> Generate supports everywhere</label>
     <label class="check"><input id="binaryGcode" type="checkbox" checked> Binary G-code (.bgcode)</label>
   </details>

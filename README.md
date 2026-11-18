@@ -104,10 +104,15 @@ Reordering boxes does not change the files, so nothing goes out of date.
 | Boxes | Height, wall thickness and corner radius of every box. The radius must be larger than the wall. |
 | STL build | Curve quality, how many boxes to compile at once, whether the ZIP includes the OpenSCAD sources, and **Force rebuild**. |
 | Print bed | Bed size, margin kept free at the edges, gap between boxes, and whether boxes may be turned 90°. |
-| Slicer profiles | The PrusaSlicer print, printer and material profile names, supports, and binary G-code. |
+| Slicer profiles | The PrusaSlicer print, printer and material profile names, brim width, supports, and binary G-code. |
 
 The slicer profiles default to a Prusa MK4S with a 0.4 mm high-flow nozzle and generic PLA. Profile names must
 match the names shown in your PrusaSlicer exactly. Slicing always uses 15% grid infill.
+
+Every box gets a 5 mm brim around its outside to stop the corners lifting (warping). Set **Brim width** to 0
+to turn it off. Brims of neighbouring boxes must not touch, so the box gap defaults to 10 mm. If you make the
+brim wider than half the box gap, or wider than the edge margin, Slice stays greyed out until you widen them
+and arrange again.
 
 Boxes shallower than 45 mm get a 26 mm cover; all others get 32 mm.
 

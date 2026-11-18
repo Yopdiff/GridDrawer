@@ -307,12 +307,12 @@ The seed project with default settings produces no errors.
 
 ### 5.4 Bed arrangement (`core/arrangement.py`)
 
-`arrange(project, bed_width=250, bed_depth=210, margin=5, gap=2, allow_rotation=True)`:
+`arrange(project, bed_width=250, bed_depth=210, margin=5, gap=10, allow_rotation=True)`:
 
 * One item per physical box (the plan's jobs expanded by `qty`).
 * A box that fits the usable area (bed minus `margin` on each side) in neither orientation goes to `failed`.
 * Shelf packing: each item goes onto the best-fitting existing shelf, else a new shelf on an existing bed,
-  else a new bed. Boxes may be rotated 90 degrees when allowed. `gap` separates neighbours.
+  else a new bed. Boxes may be rotated 90 degrees when allowed. `gap` separates neighbours; the default 10 mm leaves room for two 5 mm brims.
 * Two sort orders are tried (by area, by longest side); the result with the fewest beds wins, ties broken by
   less wasted shelf area.
 * Returns `{bed: {width, depth, margin, gap}, beds: [{number, placements: [{filename, copy, x, y, width, depth,
@@ -327,15 +327,18 @@ The seed project with default settings produces no errors.
   moved to its place (and rotated when `rotated`). Each source STL is parsed once per slice run.
 * `slice_beds(arrangement, build_dir, output_dir, exe, ...)` runs, per bed:
   `prusa-slicer-console --export-gcode --dont-arrange --output bed-N.bgcode --print-profile P
-  --printer-profile R --fill-density 15% --fill-pattern grid --nozzle-diameter 0.4 [support flags]
+  --printer-profile R --fill-density 15% --fill-pattern grid --nozzle-diameter 0.4 [support flags] [brim flags]
   --material-profile M --binary-gcode[=0] bed-N.stl`.
   Supports on (the GUI's "Supports: Everywhere"): `--support-material --support-material-auto
   --support-material-buildplate-only=0 --support-material-style snug`. `--support-material-auto` is required:
   the MK4S print profiles set `support_material_auto = 0`, which means "for support enforcers only", so
   without it no supports are generated. Off: `--support-material=0 --support-material-auto=0`.
   `--binary-gcode=0` is passed explicitly for text G-code because the MK4S printer profile defaults to binary.
+  Brim (against corner warping): `--brim-type outer_only --brim-width W` with `brim_width` W (default 5 mm).
+  Each box is a separate island in the merged STL, so each gets its own brim. `brim_width=0` passes
+  `--brim-type no_brim --brim-width 0`.
 * Defaults: print `0.20mm SPEED @MK4S HF0.4`, printer `Original Prusa MK4S HF0.4 nozzle`, material
-  `Generic PLA @MK4S HF0.4`, supports on, binary G-code on. Timeout 900 s per bed.
+  `Generic PLA @MK4S HF0.4`, supports on, binary G-code on, 5 mm outer brim. Timeout 900 s per bed.
 * Two beds are sliced at a time (`workers=2`); `on_progress` is called as each bed finishes and the returned
   items are sorted by bed number. A bed succeeds only if the exit code is 0 and the output file is non-empty.
 * **Output:** `output/slices/<YYYYmmdd-HHMMSS>/` with `bed-N.stl` and `bed-N.bgcode` (or `.gcode`).
@@ -366,7 +369,7 @@ sends the project on each call. State is lost when the server restarts; files st
 | `GET /api/build` | Latest build: `{state: idle\|running\|done\|failed, done, total, items: [{filename, status, seconds, log}], error?}` |
 | `GET /api/build/files/{filename}` | One STL (attachment) |
 | `GET /api/build/zip?include_scad=` | The ZIP |
-| `POST /api/slice` | `{arrangement, options: {print_profile, printer_profile, material_profile, supports, binary_gcode}}`; 422 unless the latest build is `done`, PrusaSlicer is found and the arrangement has beds |
+| `POST /api/slice` | `{arrangement, options: {print_profile, printer_profile, material_profile, supports, binary_gcode, brim_width}}`; 422 unless the latest build is `done`, PrusaSlicer is found and the arrangement has beds |
 | `GET /api/slice` | Latest slice run: `{state, done, total, items: [{bed, filename, status, seconds, returncode, command, stdout, stderr, log}], error?}` |
 | `GET /api/slice/debug` | Plain-text log of the latest slice run (attachment) |
 | `GET /api/slice/files/{filename}` | One `.gcode` or `.bgcode` file (attachment) |
@@ -404,7 +407,7 @@ Sidebar groups are `<details>`; all are open at first except **Slicer profiles**
 | Boxes | height, wall, radius |
 | STL build | quality (`$fn` 32 / 64 / 96), workers, include SCAD in ZIP, force rebuild |
 | Print bed | width, depth, edge margin, box gap, allow rotation |
-| Slicer profiles | print, printer and material profile names, supports, binary G-code |
+| Slicer profiles | print, printer and material profile names, brim width, supports, binary G-code. Slice is disabled while Box gap < 2 × brim or Edge margin < brim |
 
 Tool pills show `OpenSCAD <version>` and `PrusaSlicer <version>`. A missing tool shows a red pill; clicking it
 asks for the executable path and sends it to the matching `PUT` route.
@@ -486,10 +489,10 @@ All tests use the seed project or small hand-made STLs; none needs OpenSCAD or P
 5. **Arrangement:** all 42 seed boxes are accounted for and every placement stays inside the bed margins.
 6. **Merge, translated:** a triangle moved by (12, 34) lands there.
 7. **Merge, rotated:** a rotated placement turns the geometry 90 degrees into its slot.
-8. **Slice command:** default profiles, 15% grid infill, snug auto supports (`--support-material-auto`) and
-   `--binary-gcode` are on the command line.
-9. **Slice without supports:** `--support-material=0`, no auto supports, no support style, and
-   `--binary-gcode=0` for text G-code.
+8. **Slice command:** default profiles, 15% grid infill, snug auto supports (`--support-material-auto`),
+   a 5 mm outer-only brim and `--binary-gcode` are on the command line.
+9. **Slice without supports:** `--support-material=0`, no auto supports, no support style,
+   `--binary-gcode=0` for text G-code, and `--brim-type no_brim` when the brim is 0.
 10. **Build cache:** a second build of the same project compiles nothing; all 19 items are `cached`.
 11. **Slice progress:** `on_progress` fires once per bed and results come back in bed order.
 

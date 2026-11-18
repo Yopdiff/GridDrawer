@@ -380,10 +380,11 @@ function updateSteps() {
   const boxes = project.columns.reduce((sum, column) => sum + column.boxes.reduce((s, row) => s + row.qty, 0), 0);
   const built = builtSig === buildSig, arranged = arrangedSig === arrangeSig && arrangement;
   const unplaced = arranged ? arrangement.failed.length : 0;
+  const crowded = arranged ? brimCrowding(arrangement.bed) : '';
 
   $('build').disabled = Boolean(busy) || hasErrors || !boxes || !tools.openscad.found;
   $('arrange').disabled = Boolean(busy) || hasErrors || !boxes;
-  $('slice').disabled = Boolean(busy) || !built || !arranged || unplaced > 0 || !tools.prusaslicer.found;
+  $('slice').disabled = Boolean(busy) || !built || !arranged || unplaced > 0 || Boolean(crowded) || !tools.prusaslicer.found;
 
   $('buildStale').hidden = built || busy === 'build';
   $('buildPanel').classList.toggle('stale', !built && busy !== 'build');
@@ -410,9 +411,24 @@ function updateSteps() {
         : !built ? 'Generate the STL files first.'
         : !arranged ? 'Arrange the print beds first.'
         : unplaced ? `${plural(unplaced, 'box')} do not fit the bed.`
+        : crowded ? crowded
         : 'Ready to slice with PrusaSlicer.');
   }
 }
+
+function brimWidth() {
+  return Math.max(0, +$('brimWidth').value || 0);
+}
+
+// Brims of neighbouring boxes must not touch, or the boxes print joined together.
+function brimCrowding(bed) {
+  const brim = brimWidth();
+  if (bed.gap < 2 * brim) return `Brims would touch: set Box gap to at least ${fmt(2 * brim)} mm and Arrange again.`;
+  if (bed.margin < brim) return `Brims would run off the bed: set Edge margin to at least ${fmt(brim)} mm and Arrange again.`;
+  return '';
+}
+
+$('brimWidth').addEventListener('input', () => updateSteps());
 
 async function pollUntilDone(path, onUpdate, interval) {
   for (;;) {
@@ -581,6 +597,7 @@ async function sliceBeds() {
         print_profile: $('printProfile').value.trim(), printer_profile: $('printerProfile').value.trim(),
         material_profile: $('materialProfile').value.trim(),
         supports: $('supports').checked, binary_gcode: $('binaryGcode').checked,
+        brim_width: brimWidth(),
       },
     });
     const data = await pollUntilDone('/api/slice', renderSlice, 800);
